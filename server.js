@@ -41,6 +41,8 @@ wss.on('connection', ws => {
         id,
         name: cleanText(data.name, 24) || '방문자',
         color: /^#[0-9a-fA-F]{6}$/.test(data.color) ? data.color : '#7c9a83',
+        hair: Number.isInteger(data.hair) ? Math.max(0, Math.min(4, data.hair)) : 0,
+        expr: Number.isInteger(data.expr) ? Math.max(0, Math.min(4, data.expr)) : 0,
         x: Number.isFinite(data.x) ? Math.max(105, Math.min(795, data.x)) : 450,
         y: Number.isFinite(data.y) ? Math.max(150, Math.min(475, data.y)) : 390
       };
@@ -67,6 +69,10 @@ wss.on('connection', ws => {
       const oldName = player.name;
       player.name = newName;
       broadcast({ type: 'player-renamed', id: player.id, oldName, newName });
+    } else if (data.type === 'customize') {
+      if (Number.isInteger(data.hair)) player.hair = Math.max(0, Math.min(4, data.hair));
+      if (Number.isInteger(data.expr)) player.expr = Math.max(0, Math.min(4, data.expr));
+      broadcast({ type: 'player-customized', id: player.id, hair: player.hair, expr: player.expr });
     }
   });
   ws.on('close', () => {

@@ -61,7 +61,12 @@ wss.on('connection', ws => {
       const text = cleanText(data.text, 120);
       if (!text) return;
       broadcast({ type: 'chat', name: player.name, text });
-      ws.send(JSON.stringify({ type: 'chat', name: player.name, text }));
+    } else if (data.type === 'rename') {
+      const newName = cleanText(data.name, 24);
+      if (!newName || newName === player.name) return;
+      const oldName = player.name;
+      player.name = newName;
+      broadcast({ type: 'player-renamed', id: player.id, oldName, newName });
     }
   });
   ws.on('close', () => {

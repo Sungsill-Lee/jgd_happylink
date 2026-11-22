@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>작은 예배당 - 온라인 공간 데모</title>
+<style>
+:root{--ink:#26332f;--muted:#718078;--cream:#f5f0e5;--green:#486b5b;--gold:#d6b56e}
+*{box-sizing:border-box} body{margin:0;background:#e8e4d9;color:var(--ink);font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif;overflow:hidden}
+#app{height:100dvh;display:flex;flex-direction:column}.top{height:58px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#fbf8f0;border-bottom:1px solid #ded8ca;z-index:3}.brand{font-weight:800;letter-spacing:-.4px}.brand small{display:block;font-size:10px;font-weight:500;color:var(--muted);letter-spacing:1.5px}.status{font-size:12px;color:#56705f;display:flex;align-items:center;gap:7px}.dot{width:8px;height:8px;border-radius:50%;background:#69a77d;box-shadow:0 0 0 3px #69a77d22}
+main{position:relative;flex:1;min-height:0;overflow:hidden;background:#c8c4b7}canvas{display:block;width:100%;height:100%;touch-action:none}.hint{position:absolute;left:16px;top:15px;padding:9px 12px;border-radius:12px;background:#fffdf4dd;backdrop-filter:blur(8px);font-size:12px;color:#647169;box-shadow:0 3px 14px #26332f12;pointer-events:none}.hint b{color:#344d41}.panel{position:absolute;right:16px;top:15px;width:210px;background:#fffdf1eF;border:1px solid #e1dac9;border-radius:14px;padding:12px 14px;box-shadow:0 5px 20px #26332f18}.panel h3{font-size:12px;margin:0 0 8px;color:#758177;font-weight:700}.people{font-size:12px;display:flex;align-items:center;gap:7px;margin:5px 0}.people .avatar{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#e6d8bc;font-size:13px}.people .you{font-weight:700}.chat{position:absolute;left:16px;bottom:16px;width:min(340px,calc(100% - 32px));height:220px;background:#fffdf1ed;border:1px solid #e1dac9;border-radius:16px;box-shadow:0 8px 28px #26332f20;display:flex;flex-direction:column;overflow:hidden}.chathead{padding:11px 14px;border-bottom:1px solid #ebe5d8;font-size:12px;font-weight:800;display:flex;justify-content:space-between}.chathead span{color:#889187;font-weight:500}.messages{padding:10px 13px;overflow:auto;flex:1;font-size:12px}.msg{margin:0 0 8px;line-height:1.45;overflow-wrap:anywhere}.msg b{color:#496b58;margin-right:5px}.msg.system{color:#92968d;font-size:11px}.send{display:flex;gap:6px;padding:9px;border-top:1px solid #ebe5d8}.send input{min-width:0;flex:1;border:1px solid #ded8ca;background:#fff;border-radius:9px;padding:9px 10px;font:inherit;font-size:12px;outline:none}.send button{border:0;border-radius:9px;background:#496b58;color:white;padding:0 13px;font-weight:700}.controls{position:absolute;right:20px;bottom:22px;width:142px;height:142px;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);gap:5px;touch-action:none}.dir{border:1px solid #ffffffa8;background:#fffdf0e8;color:#476252;border-radius:13px;box-shadow:0 4px 12px #26332f20;font-size:21px;font-weight:800;display:grid;place-items:center;user-select:none; -webkit-user-select:none;touch-action:none}.dir:active{background:#d9e4d7;transform:scale(.96)}.dir.up{grid-area:1/2}.dir.left{grid-area:2/1}.dir.center{grid-area:2/2;font-size:10px;color:#9a9a88;background:#f4efdf}.dir.right{grid-area:2/3}.dir.down{grid-area:3/2}.mobile-note{display:none}
+@media(max-width:650px){.panel{width:145px;padding:9px;right:10px;top:10px}.panel h3{margin-bottom:5px}.people{font-size:10px;margin:3px 0}.people .avatar{width:18px;height:18px}.hint{left:10px;top:10px;font-size:10px;max-width:calc(100% - 175px)}.chat{left:10px;bottom:10px;width:min(270px,calc(100% - 165px));height:175px}.controls{right:10px;bottom:10px;width:132px;height:132px;gap:4px}.dir{border-radius:11px}.top{height:52px;padding:0 13px}.status{font-size:10px}}
+@media(max-width:380px){.chat{width:calc(100% - 150px)}.panel{width:130px}.hint{max-width:calc(100% - 150px)}}
+</style><script src="./config.js"></script></head>
+<body><div id="app"><header class="top"><div class="brand">작은 예배당 <small>A LITTLE VIRTUAL CHAPEL</small></div><div class="status"><i class="dot" id="statusDot"></i><span id="online">서버 연결 중...</span></div></header><main><canvas id="world"></canvas><div class="hint"><b>예배당에 오신 걸 환영해요</b><br>방향키 또는 오른쪽 버튼으로 이동</div><section class="panel"><h3>함께 있는 사람</h3><div id="people"></div></section><section class="chat"><div class="chathead">예배당 대화 <span>모두에게 열려 있어요</span></div><div class="messages" id="messages"><p class="msg system">예배당에 오신 것을 환영합니다. 편하게 인사해 보세요.</p></div><form class="send" id="send"><input id="message" maxlength="120" placeholder="메시지를 입력하세요..." autocomplete="off"><button>전송</button></form></section><div class="controls" aria-label="이동 버튼"><button class="dir up" data-dir="up">▲</button><button class="dir left" data-dir="left">◀</button><div class="dir center">MOVE</div><button class="dir right" data-dir="right">▶</button><button class="dir down" data-dir="down">▼</button></div></main></div>
+<script>
+(()=>{
+const canvas=document.getElementById('world'),ctx=canvas.getContext('2d');let W=0,H=0,dpr=1;
+const names=['하늘','은혜','평안','기쁨','소망','샘물','햇살','온유'];
+const colors=['#d68b67','#7c9a83','#7e8eb1','#c6a65e','#a47e9b','#6d9eaa'];
+const me={id:null,name:names[Math.floor(Math.random()*names.length)]+Math.floor(Math.random()*90+10),x:0,y:0,color:colors[Math.floor(Math.random()*colors.length)],face:'🙂',dir:'down'};
+let others=new Map(),keys={},socket=null,joined=false,lastMoveSent=0;
+function setStatus(text,ok){document.getElementById('online').textContent=text;document.getElementById('statusDot').style.background=ok?'#69a77d':'#d17b65'}
+function resize(){const r=canvas.getBoundingClientRect();dpr=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);if(!me.x){me.x=W*.5;me.y=H*.7}}
+window.addEventListener('resize',resize);resize();
+function wsUrl(){const configured=(window.CHAPEL_WS_URL||'').trim();if(configured&& !configured.includes('YOUR-RENDER-SERVICE'))return configured;const proto=location.protocol==='https:'?'wss:':'ws:';return `${proto}//${location.host}`}
+function send(data){if(socket&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify(data))}
+function connect(){
+ const endpoint=wsUrl();
+ if((window.CHAPEL_WS_URL||'').includes('YOUR-RENDER-SERVICE')){setStatus('서버 주소 설정 필요',false);addMsg('','public/config.js 파일에서 Render 서버 주소를 설정해 주세요.',true);return}
+ socket=new WebSocket(endpoint);
+ socket.addEventListener('open',()=>{setStatus('서버 연결됨',true);send({type:'join',name:me.name,color:me.color,x:me.x,y:me.y})});
+ socket.addEventListener('message',e=>{let d;try{d=JSON.parse(e.data)}catch{return}
+  if(d.type==='init'){me.id=d.you.id;others=new Map((d.players||[]).map(p=>[p.id,p]));joined=true;renderPeople();addMsg('',`실시간 서버에 연결되었습니다. 현재 ${others.size+1}명이 함께 있어요.`,true)}
+  else if(d.type==='player-joined'){others.set(d.player.id,d.player);renderPeople();addMsg('',`${d.player.name}님이 예배당에 들어왔습니다.`,true)}
+  else if(d.type==='player-left'){const p=others.get(d.id);others.delete(d.id);renderPeople();if(p)addMsg('',`${p.name}님이 나갔습니다.`,true)}
+  else if(d.type==='players'){others=new Map((d.players||[]).filter(p=>p.id!==me.id).map(p=>[p.id,p]));renderPeople()}
+  else if(d.type==='move'){if(d.player.id!==me.id){others.set(d.player.id,d.player);renderPeople()}}
+  else if(d.type==='chat'){addMsg(d.name,d.text,false)}
+  else if(d.type==='error'){addMsg('',d.message||'서버 오류가 발생했습니다.',true)}
+ });
+ socket.addEventListener('close',()=>{joined=false;setStatus('서버 연결 끊김',false);addMsg('','서버 연결이 끊어졌습니다. 새로고침해 다시 접속해 주세요.',true)});
+ socket.addEventListener('error',()=>setStatus('서버 연결 오류',false));
+}
+function renderPeople(){const list=[{...me,you:true},...others.values()];document.getElementById('people').innerHTML=list.map(p=>`<div class="people"><span class="avatar" style="background:${p.color}33">${p.you?'🙂':'🧑'}</span><span class="${p.you?'you':''}">${escapeHtml(p.name)}${p.you?' (나)':''}</span></div>`).join('');document.getElementById('online').textContent=`${list.length}명 접속 중`}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function addMsg(name,text,system=false){const p=document.createElement('p');p.className='msg'+(system?' system':'');p.innerHTML=system?escapeHtml(text):`<b>${escapeHtml(name)}</b>${escapeHtml(text)}`;const box=document.getElementById('messages');box.appendChild(p);box.scrollTop=box.scrollHeight;while(box.children.length>80)box.removeChild(box.firstChild)}
+document.getElementById('send').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('message'),t=input.value.trim();if(!t)return;if(!joined){addMsg('','서버에 연결된 후 메시지를 보낼 수 있습니다.',true);return}send({type:'chat',text:t});input.value=''});
+function setDir(d,on){keys[d]=on}
+document.querySelectorAll('[data-dir]').forEach(b=>{const d=b.dataset.dir;b.addEventListener('pointerdown',e=>{e.preventDefault();setDir(d,true);b.setPointerCapture(e.pointerId)});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>setDir(d,false)))});
+const keyMap={ArrowUp:'up',w:'up',ArrowDown:'down',s:'down',ArrowLeft:'left',a:'left',ArrowRight:'right',d:'right'};
+window.addEventListener('keydown',e=>{if(keyMap[e.key]){keys[keyMap[e.key]]=true;e.preventDefault()}});
+window.addEventListener('keyup',e=>{if(keyMap[e.key])keys[keyMap[e.key]]=false});window.addEventListener('blur',()=>keys={});
+function polygon(points,fill,stroke){ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke()}}
+function draw(){ctx.clearRect(0,0,W,H);const s=Math.min(W/900,H/560),ox=(W-900*s)/2,oy=(H-560*s)/2;ctx.save();ctx.translate(ox,oy);ctx.scale(s,s);
+polygon([[95,45],[805,45],[865,130],[865,485],[805,535],[95,535],[35,485],[35,130]],'#d8cdb6','#8d8778');polygon([[95,75],[805,75],[830,130],[830,470],[795,505],[105,505],[70,470],[70,130]],'#bba989','#9b8b70');polygon([[110,100],[790,100],[810,135],[810,465],[785,485],[115,485],[90,465],[90,135]],'#eadfc9','#aa9b80');
+for(let y=140;y<480;y+=34){ctx.strokeStyle='#d2c3a7';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(100,y);ctx.lineTo(800,y);ctx.stroke()}for(let x=140;x<800;x+=70){ctx.strokeStyle='#ddcfb5';ctx.beginPath();ctx.moveTo(x,140);ctx.lineTo(x,480);ctx.stroke()}
+for(let x of [145,285,615,755]){ctx.fillStyle='#78918b';ctx.fillRect(x-18,75,36,55);ctx.fillStyle='#d6b56e';ctx.fillRect(x-3,75,6,55);ctx.fillRect(x-18,98,36,4);ctx.strokeStyle='#786d5a';ctx.strokeRect(x-18,75,36,55)}
+polygon([[355,110],[545,110],[565,150],[335,150]],'#9b7650','#6d553c');ctx.fillStyle='#f4eddd';ctx.fillRect(385,90,130,24);ctx.fillStyle='#b88f53';ctx.fillRect(445,63,10,42);ctx.fillRect(430,76,40,7);ctx.fillStyle='#fff8e9';ctx.beginPath();ctx.arc(450,167,22,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#c3a66e';ctx.stroke();
+polygon([[390,185],[510,185],[530,210],[370,210]],'#805d40','#5d4835');ctx.fillStyle='#f1e5cd';ctx.fillRect(410,180,80,8);
+for(let row=0;row<4;row++){let y=260+row*52;for(let side of [-1,1]){let x=450+side*125;ctx.fillStyle='#8d6445';ctx.fillRect(x-72,y,144,23);ctx.fillStyle='#b4885e';ctx.fillRect(x-72,y-7,144,8);ctx.fillStyle='#6e5039';ctx.fillRect(x-68,y+23,8,9);ctx.fillRect(x+60,y+23,8,9)}}
+ctx.fillStyle='#a66c58';ctx.fillRect(424,230,52,270);ctx.globalAlpha=.25;for(let y=240;y<490;y+=20){ctx.fillStyle='#f4e4d2';ctx.fillRect(430,y,40,2)}ctx.globalAlpha=1;
+for(let x of [120,780]){ctx.fillStyle='#98704d';ctx.fillRect(x-12,205,24,24);ctx.fillStyle='#55775c';for(let a=0;a<5;a++){ctx.beginPath();ctx.ellipse(x+(a-2)*8,195-Math.abs(a-2)*3,10,22,a*.3,0,Math.PI*2);ctx.fill()}}
+ctx.fillStyle='#87785f';ctx.font='12px sans-serif';ctx.textAlign='center';ctx.fillText('작은 예배당',450,40);
+const all=[...others.values(),me].sort((a,b)=>a.y-b.y);for(const p of all){let x=p.x,y=p.y;ctx.fillStyle='#00000022';ctx.beginPath();ctx.ellipse(x,y+12,13,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(x,y,11,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f5d8b8';ctx.beginPath();ctx.arc(x,y-3,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#37443b';ctx.beginPath();ctx.arc(x-2,y-4,1,0,Math.PI*2);ctx.arc(x+3,y-4,1,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fffdf3';ctx.font='11px sans-serif';ctx.textAlign='center';ctx.fillText(p.name,x,y-19)}ctx.restore()}
+let last=0;function loop(t){let dt=Math.min((t-last)/16.67,2);last=t;let dx=(keys.right?1:0)-(keys.left?1:0),dy=(keys.down?1:0)-(keys.up?1:0);if(dx||dy){let n=Math.hypot(dx,dy);me.x+=dx/n*2.6*dt;me.y+=dy/n*2.6*dt;me.x=Math.max(105,Math.min(795,me.x));me.y=Math.max(150,Math.min(475,me.y));if(t-lastMoveSent>45){send({type:'move',x:me.x,y:me.y});lastMoveSent=t}}draw();requestAnimationFrame(loop)}
+requestAnimationFrame(loop);connect();
+})();</script></body></html>

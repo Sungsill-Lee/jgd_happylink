@@ -1,0 +1,9 @@
+{
+  "name": "little-chapel-realtime",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WebSocket real-time chapel multiplayer demo",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "ws": "^8.18.0" }
+}
